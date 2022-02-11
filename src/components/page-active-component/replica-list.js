@@ -1,18 +1,24 @@
-import PropTypes from 'prop-types';
-import ReplicaSummaryModel from '../../models/replica-summary';
-import { Link } from 'react-router-dom';
-import * as routing from '../../utils/routing';
-import { smallReplicaName } from '../../utils/string';
-import ReplicaStatus from '../replica-status';
-import RelativeToNow from '../time/relative-to-now';
-import Duration from '../time/duration';
-import React, { useEffect, useState } from 'react';
 import { Icon, Table, Typography } from '@equinor/eds-core-react';
-import { chevron_up, chevron_down } from '@equinor/eds-icons';
+import { chevron_down, chevron_up } from '@equinor/eds-icons';
 import classNames from 'classnames';
-import ReplicaImage from '../replica-image';
+import * as PropTypes from 'prop-types';
+import { Fragment, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
-const ReplicaList = ({ appName, envName, componentName, replicaList }) => {
+import { ReplicaImage } from '../replica-image';
+import { ReplicaStatus } from '../replica-status';
+import { Duration } from '../time/duration';
+import { RelativeToNow } from '../time/relative-to-now';
+import { ReplicaSummaryNormalizedModelValidationMap } from '../../models/replica-summary';
+import { getReplicaUrl } from '../../utils/routing';
+import { smallReplicaName } from '../../utils/string';
+
+export const ReplicaList = ({
+  appName,
+  envName,
+  componentName,
+  replicaList,
+}) => {
   const [moreInfoExpanded, setMoreInfoExpanded] = useState({});
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -26,24 +32,23 @@ const ReplicaList = ({ appName, envName, componentName, replicaList }) => {
     });
   };
 
-  const getExpandedClassNames = (replicaName) => {
-    return classNames({
+  const getExpandedClassNames = (replicaName) =>
+    classNames({
       'border-bottom-transparent': !!moreInfoExpanded[replicaName],
     });
-  };
 
   const getAccordionIcon = (replicaName) =>
     moreInfoExpanded[replicaName] ? chevron_down : chevron_up;
 
   return (
-    <React.Fragment>
+    <>
       <Typography variant="h4">Replicas</Typography>
       {replicaList ? (
         <div className="grid grid--table-overflow">
           <Table>
             <Table.Head>
               <Table.Row>
-                <Table.Cell></Table.Cell>
+                <Table.Cell />
                 <Table.Cell>Name</Table.Cell>
                 <Table.Cell>Status</Table.Cell>
                 <Table.Cell>Created</Table.Cell>
@@ -54,7 +59,7 @@ const ReplicaList = ({ appName, envName, componentName, replicaList }) => {
               {replicaList.map((replica) => {
                 const expandClassNames = getExpandedClassNames(replica.name);
                 return (
-                  <React.Fragment key={replica.name}>
+                  <Fragment key={replica.name}>
                     <Table.Row>
                       <Table.Cell
                         className={`fitwidth padding-right-0 ${expandClassNames}`}
@@ -66,7 +71,7 @@ const ReplicaList = ({ appName, envName, componentName, replicaList }) => {
                           onClick={() => toggleMoreInfo(replica.name)}
                         >
                           <Icon
-                            size="24"
+                            size={24}
                             data={getAccordionIcon(replica.name)}
                             role="button"
                             title="Toggle more information"
@@ -75,7 +80,7 @@ const ReplicaList = ({ appName, envName, componentName, replicaList }) => {
                       </Table.Cell>
                       <Table.Cell className={expandClassNames}>
                         <Link
-                          to={routing.getReplicaUrl(
+                          to={getReplicaUrl(
                             appName,
                             envName,
                             componentName,
@@ -91,7 +96,7 @@ const ReplicaList = ({ appName, envName, componentName, replicaList }) => {
                         <ReplicaStatus replica={replica} />
                       </Table.Cell>
                       <Table.Cell className={expandClassNames}>
-                        <RelativeToNow time={replica.created}></RelativeToNow>
+                        <RelativeToNow time={replica.created} />
                       </Table.Cell>
                       <Table.Cell className={expandClassNames}>
                         <Duration start={replica.created} end={now} />
@@ -100,7 +105,7 @@ const ReplicaList = ({ appName, envName, componentName, replicaList }) => {
                     {moreInfoExpanded[replica.name] && (
                       <Table.Row>
                         <Table.Cell />
-                        <Table.Cell colSpan="4">
+                        <Table.Cell colSpan={4}>
                           <div className="grid grid--gap-medium">
                             <span />
                             <ReplicaImage replica={replica} />
@@ -109,18 +114,16 @@ const ReplicaList = ({ appName, envName, componentName, replicaList }) => {
                         </Table.Cell>
                       </Table.Row>
                     )}
-                  </React.Fragment>
+                  </Fragment>
                 );
               })}
             </Table.Body>
           </Table>
         </div>
       ) : (
-        <Typography variant="body_short">
-          This component has no replicas
-        </Typography>
+        <Typography>This component has no replicas</Typography>
       )}
-    </React.Fragment>
+    </>
   );
 };
 
@@ -128,7 +131,9 @@ ReplicaList.propTypes = {
   appName: PropTypes.string.isRequired,
   envName: PropTypes.string.isRequired,
   componentName: PropTypes.string.isRequired,
-  replicaList: PropTypes.arrayOf(PropTypes.exact(ReplicaSummaryModel)),
+  replicaList: PropTypes.arrayOf(
+    PropTypes.shape(ReplicaSummaryNormalizedModelValidationMap)
+  ),
 };
 
 export default ReplicaList;

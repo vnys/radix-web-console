@@ -1,22 +1,20 @@
-import { useState, useEffect } from 'react';
-import replicaSummaryNormaliser from '../../models/replica-summary/normaliser';
+import { useEffect, useState } from 'react';
 
-const useSelectReplica = (environment, componentName, replicaName) => {
+import { ReplicaSummaryModelNormalizer } from '../../models/replica-summary/normalizer';
+
+export const useSelectReplica = (environment, componentName, replicaName) => {
   const [replica, setReplica] = useState();
 
   useEffect(() => {
-    const deployment = environment ? environment.activeDeployment : null;
+    const deployment = environment?.activeDeployment;
+    const component = deployment?.components?.find(
+      (x) => x.name === componentName
+    );
+    const selectedReplica = component?.replicaList?.find(
+      (x) => x.name === replicaName
+    );
 
-    const component =
-      deployment && deployment.components
-        ? deployment.components.find((comp) => comp.name === componentName)
-        : null;
-
-    const selectedReplica =
-      component && component.replicaList
-        ? component.replicaList.find((replica) => replica.name === replicaName)
-        : null;
-    setReplica(replicaSummaryNormaliser(selectedReplica));
+    setReplica(ReplicaSummaryModelNormalizer(selectedReplica));
   }, [environment, componentName, replicaName]);
 
   return replica;
